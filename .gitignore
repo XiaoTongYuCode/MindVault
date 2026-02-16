@@ -1,0 +1,23 @@
+# Xcode
+*.xcconfig
+!*.xcconfig.example
+*.xcuserstate
+*.xcuserdatad
+xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# macOS
+.DS_Store
+
+# Build
+build/
+DerivedData/
+
+# Swift Package Manager
+.swiftpm/
+
+# CocoaPods
+Pods/
+
+# App-specific
+*.xcconfig

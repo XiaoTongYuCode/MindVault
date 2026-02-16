@@ -6,14 +6,39 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		18AE588B2F3D686A00DDAF5A /* LlamaSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 18AE588A2F3D686A00DDAF5A /* LlamaSwift */; };
+		18AE59522F40A13B00DDAF5A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 18AE59502F40A13B00DDAF5A /* Localizable.strings */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		18AE58772F3D64C000DDAF5A /* MindVault.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MindVault.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		18AE594E2F40A13B00DDAF5A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		18AE594F2F40A13B00DDAF5A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		18AE59192F401E4600DDAF5A /* Exceptions for "MindVault" folder in "MindVault" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 18AE58762F3D64C000DDAF5A /* MindVault */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		18AE58792F3D64C000DDAF5A /* MindVault */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				18AE59192F401E4600DDAF5A /* Exceptions for "MindVault" folder in "MindVault" target */,
+			);
 			path = MindVault;
+			sourceTree = "<group>";
+		};
+		18AE59662F415F9C00DDAF5A /* img */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = img;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -23,6 +48,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				18AE588B2F3D686A00DDAF5A /* LlamaSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -32,6 +58,7 @@
 		18AE586E2F3D64C000DDAF5A = {
 			isa = PBXGroup;
 			children = (
+				18AE59512F40A13B00DDAF5A /* Resources */,
 				18AE58792F3D64C000DDAF5A /* MindVault */,
 				18AE58782F3D64C000DDAF5A /* Products */,
 			);
@@ -43,6 +70,15 @@
 				18AE58772F3D64C000DDAF5A /* MindVault.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		18AE59512F40A13B00DDAF5A /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				18AE59662F415F9C00DDAF5A /* img */,
+				18AE59502F40A13B00DDAF5A /* Localizable.strings */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -62,9 +98,11 @@
 			);
 			fileSystemSynchronizedGroups = (
 				18AE58792F3D64C000DDAF5A /* MindVault */,
+				18AE59662F415F9C00DDAF5A /* img */,
 			);
 			name = MindVault;
 			packageProductDependencies = (
+				18AE588A2F3D686A00DDAF5A /* LlamaSwift */,
 			);
 			productName = MindVault;
 			productReference = 18AE58772F3D64C000DDAF5A /* MindVault.app */;
@@ -91,9 +129,13 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = 18AE586E2F3D64C000DDAF5A;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				18AE58892F3D686A00DDAF5A /* XCRemoteSwiftPackageReference "llama.swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 18AE58782F3D64C000DDAF5A /* Products */;
 			projectDirPath = "";
@@ -109,6 +151,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				18AE59522F40A13B00DDAF5A /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,6 +166,18 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		18AE59502F40A13B00DDAF5A /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				18AE594E2F40A13B00DDAF5A /* en */,
+				18AE594F2F40A13B00DDAF5A /* zh-Hans */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		18AE58802F3D64C100DDAF5A /* Debug */ = {
@@ -246,6 +301,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MindVault/MindVault.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2HLNAHGU24;
@@ -254,6 +310,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MindVault/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -269,6 +326,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
+				OPENROUTER_API_KEY = "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";
 				PRODUCT_BUNDLE_IDENTIFIER = com.xiaotongyu.MindVault;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -290,6 +348,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MindVault/MindVault.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2HLNAHGU24;
@@ -298,6 +357,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MindVault/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -313,6 +373,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
 				MARKETING_VERSION = 1.0;
+				OPENROUTER_API_KEY = "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";
 				PRODUCT_BUNDLE_IDENTIFIER = com.xiaotongyu.MindVault;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -351,6 +412,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		18AE58892F3D686A00DDAF5A /* XCRemoteSwiftPackageReference "llama.swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mattt/llama.swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.8003.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		18AE588A2F3D686A00DDAF5A /* LlamaSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 18AE58892F3D686A00DDAF5A /* XCRemoteSwiftPackageReference "llama.swift" */;
+			productName = LlamaSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 18AE586F2F3D64C000DDAF5A /* Project object */;
 }

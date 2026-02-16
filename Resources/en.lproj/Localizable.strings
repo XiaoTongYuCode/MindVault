@@ -1,0 +1,126 @@
+/* 
+  Localizable.strings (English)
+  MindVault
+  
+  Created by XTY on 2026/2/12.
+*/
+
+// Tab Bar
+"tab.home" = "Home";
+"tab.entries" = "Entries";
+"tab.mood" = "Mood";
+"tab.chat" = "Chat";
+"tab.settings" = "Settings";
+
+// Home View
+"home.greeting.morning" = "Good Morning";
+"home.greeting.afternoon" = "Good Afternoon";
+"home.greeting.evening" = "Good Evening";
+"home.greeting.night" = "Late Night";
+"home.subtitle" = "Record your thoughts and feelings";
+"home.overview.title" = "Today's Overview";
+"home.overview.entries" = "%d entries today";
+"home.write.button" = "Write Now";
+"home.recent.title" = "Recent Entries";
+"home.empty.title" = "No entries yet";
+"home.empty.message" = "Write your first entry to start recording your emotions.";
+"home.empty.action" = "Write Entry";
+
+// Entries View
+"entries.title" = "Entries";
+"entries.subtitle" = "All entries in reverse chronological order";
+"entries.new.button" = "New Entry";
+"entries.empty.title" = "No entries";
+"entries.empty.message" = "Write your first entry to start recording your mood.";
+"entries.empty.action" = "Write Entry";
+
+// Compose View
+"compose.title" = "Compose";
+"compose.title.placeholder" = "Title (optional)";
+"compose.content.placeholder" = "Write your thoughts...";
+"compose.cancel" = "Cancel";
+"compose.save" = "Save";
+"compose.empty.alert" = "Please enter diary content";
+"compose.empty.alert.ok" = "OK";
+"compose.discard.alert.title" = "Discard changes?";
+"compose.discard.alert.continue" = "Continue Editing";
+"compose.discard.alert.save" = "Save Draft";
+"compose.discard.alert.message" = "Content has been saved as draft, you can continue editing next time.";
+"compose.speech.permission.title" = "Speech Recognition Permission Required";
+"compose.speech.permission.message" = "Please allow microphone and speech recognition access in Settings.";
+"compose.speech.permission.settings" = "Open Settings";
+"compose.speech.error" = "Speech Recognition Error";
+
+// Entry Detail View
+"entry.detail.title" = "Entry Details";
+"entry.detail.delete" = "Delete";
+"entry.detail.delete.alert.title" = "Delete entry?";
+"entry.detail.delete.alert.cancel" = "Cancel";
+"entry.detail.delete.alert.confirm" = "Delete";
+"entry.detail.delete.alert.message" = "This action cannot be undone.";
+"entry.analyzing" = "Analyzing...";
+"entry.analysis.failed" = "Analysis Failed";
+
+// Mood View
+"mood.title" = "Mood Curve";
+"mood.subtitle" = "Track your emotional trends";
+"mood.range.week" = "Last 7 Days";
+"mood.range.month" = "Last 30 Days";
+"mood.stats.average" = "Average Sentiment Score";
+"mood.stats.total" = "Total Entries";
+"mood.stats.total.entries" = "%d entries";
+"mood.distribution" = "Mood Distribution";
+"mood.very_positive" = "Very Positive";
+"mood.positive" = "Positive";
+"mood.neutral" = "Neutral";
+"mood.negative" = "Negative";
+"mood.very_negative" = "Very Negative";
+"mood.tag.analysis.title" = "Tag Sentiment Analysis";
+"mood.tag.analysis.empty" = "No tag data available";
+
+// Chat View
+"chat.title" = "Chat";
+"chat.empty.title" = "Talk to Me";
+"chat.empty.message" = "Share your thoughts and feelings with me, I'm here to listen";
+"chat.input.placeholder" = "Type your thoughts...";
+"chat.model.local" = "Local";
+"chat.model.stepfun" = "StepFun";
+"chat.generating" = "Thinking...";
+"chat.error" = "Sorry, I encountered some issues. Please try again later. Error: %@";
+
+// Settings View
+"settings.title" = "Settings";
+"settings.language.title" = "Language";
+"settings.language.description" = "Choose app display language";
+"settings.language.chinese" = "简体中文";
+"settings.language.english" = "English";
+"settings.theme.title" = "Theme";
+"settings.theme.description" = "Choose app theme color";
+"settings.about.title" = "About";
+"settings.version" = "APP Version";
+
+// Network Permission
+"network.title" = "StepFun Requires Network";
+"network.subtitle" = "Switch to use it?";
+"network.privacy.title" = "Your chats only exist on your phone";
+"network.privacy.subtitle" = "Not stored anywhere else";
+"network.allow" = "Allow Network Access";
+
+// Sentiment Analysis
+"sentiment.not_analyzed" = "Not Analyzed";
+"sentiment.no_data" = "No Data";
+"sentiment.analyzing" = "Analyzing sentiment or analysis failed.";
+
+// Tags
+"tag.study" = "Study";
+"tag.work" = "Work";
+"tag.family" = "Family";
+"tag.health" = "Health";
+"tag.travel" = "Travel";
+"tag.hobby" = "Hobby";
+"tag.relationship" = "Relationship";
+"tag.reflection" = "Reflection";
+"tag.other" = "Other";
+
+// Common
+"common.cancel" = "Cancel";

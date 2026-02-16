@@ -1,0 +1,126 @@
+/* 
+  Localizable.strings (Chinese Simplified)
+  MindVault
+  
+  Created by XTY on 2026/2/12.
+*/
+
+// Tab Bar
+"tab.home" = "首页";
+"tab.entries" = "日记";
+"tab.mood" = "情感";
+"tab.chat" = "倾诉";
+"tab.settings" = "设置";
+
+// Home View
+"home.greeting.morning" = "早上好";
+"home.greeting.afternoon" = "下午好";
+"home.greeting.evening" = "晚上好";
+"home.greeting.night" = "夜深了";
+"home.subtitle" = "记录你的心情与想法";
+"home.overview.title" = "今日概览";
+"home.overview.entries" = "已写日记 %d 篇";
+"home.write.button" = "记录当下";
+"home.recent.title" = "最近日记";
+"home.empty.title" = "还没有日记";
+"home.empty.message" = "写下第一篇日记，开始记录你的情绪。";
+"home.empty.action" = "写日记";
+
+// Entries View
+"entries.title" = "日记列表";
+"entries.subtitle" = "全部日记按时间倒序";
+"entries.new.button" = "新日记";
+"entries.empty.title" = "暂无日记";
+"entries.empty.message" = "写下你的第一篇日记，开始记录心情。";
+"entries.empty.action" = "写日记";
+
+// Compose View
+"compose.title" = "随记";
+"compose.title.placeholder" = "标题（可选）";
+"compose.content.placeholder" = "记录当下...";
+"compose.cancel" = "取消";
+"compose.save" = "保存";
+"compose.empty.alert" = "请输入日记内容";
+"compose.empty.alert.ok" = "知道了";
+"compose.discard.alert.title" = "放弃编辑？";
+"compose.discard.alert.continue" = "继续编辑";
+"compose.discard.alert.save" = "暂存";
+"compose.discard.alert.message" = "内容已保存为草稿，下次打开可继续编辑。";
+"compose.speech.permission.title" = "需要语音识别权限";
+"compose.speech.permission.message" = "请在设置中允许访问麦克风和语音识别功能。";
+"compose.speech.permission.settings" = "前往设置";
+"compose.speech.error" = "语音识别错误";
+
+// Entry Detail View
+"entry.detail.title" = "日记详情";
+"entry.detail.delete" = "删除";
+"entry.detail.delete.alert.title" = "删除日记？";
+"entry.detail.delete.alert.cancel" = "取消";
+"entry.detail.delete.alert.confirm" = "删除";
+"entry.detail.delete.alert.message" = "删除后无法恢复。";
+"entry.analyzing" = "情感分析中...";
+"entry.analysis.failed" = "情感分析失败";
+
+// Mood View
+"mood.title" = "心情曲线";
+"mood.subtitle" = "追踪你的情绪变化趋势";
+"mood.range.week" = "近 7 天";
+"mood.range.month" = "近 30 天";
+"mood.stats.average" = "平均情感指数";
+"mood.stats.total" = "日记总数";
+"mood.stats.total.entries" = "%d 篇";
+"mood.distribution" = "情感分布";
+"mood.very_positive" = "兴奋";
+"mood.positive" = "积极";
+"mood.neutral" = "中性";
+"mood.negative" = "消极";
+"mood.very_negative" = "沮丧";
+"mood.tag.analysis.title" = "类型情绪分析";
+"mood.tag.analysis.empty" = "暂无标签数据";
+
+// Chat View
+"chat.title" = "倾诉";
+"chat.empty.title" = "向我倾诉";
+"chat.empty.message" = "把你的想法和感受告诉我，我会认真倾听";
+"chat.input.placeholder" = "告诉我你的想法 ..";
+"chat.model.local" = "心匣";
+"chat.model.stepfun" = "StepFun";
+"chat.generating" = "正在思考...";
+"chat.error" = "抱歉，我遇到了一些问题。请稍后再试。错误信息：%@";
+
+// Settings View
+"settings.title" = "设置";
+"settings.language.title" = "语言";
+"settings.language.description" = "选择应用显示语言";
+"settings.language.chinese" = "简体中文";
+"settings.language.english" = "English";
+"settings.theme.title" = "主题";
+"settings.theme.description" = "选择应用主题色调";
+"settings.about.title" = "关于";
+"settings.version" = "APP版本";
+
+// Network Permission
+"network.title" = "StepFun 需要网络";
+"network.subtitle" = "是否切换使用？";
+"network.privacy.title" = "您的聊天仅存在于您的手机中";
+"network.privacy.subtitle" = "不会在任何其他地方存储";
+"network.allow" = "允许使用网络";
+
+// Sentiment Analysis
+"sentiment.not_analyzed" = "未分析";
+"sentiment.no_data" = "暂无数据";
+"sentiment.analyzing" = "正在进行情感分析或分析失败。";
+
+// Tags
+"tag.study" = "学习";
+"tag.work" = "工作";
+"tag.family" = "家庭";
+"tag.health" = "健康";
+"tag.travel" = "旅行";
+"tag.hobby" = "爱好";
+"tag.relationship" = "情感";
+"tag.reflection" = "思考";
+"tag.other" = "其他";
+
+// Common
+"common.cancel" = "取消";
