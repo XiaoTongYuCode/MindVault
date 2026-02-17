@@ -80,6 +80,28 @@ struct HomeView: View {
         .padding(.top, 6)
     }
 
+    private var aiGreetingCard: some View {
+        Group {
+            if !store.aiGreeting.isEmpty {
+                GlassCard {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(MVTheme.primary)
+                            .padding(.top, 2)
+                        
+                        Text(processedAiGreeting)
+                            .font(.system(size: 15))
+                            .foregroundColor(MVTheme.foreground.opacity(0.8))
+                            .lineLimit(3)
+                            .lineSpacing(6)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+        }
+    }
+
     private var writeButton: some View {
         Button {
             showCompose = true
@@ -115,6 +137,9 @@ struct HomeView: View {
                 }
                 .buttonStyle(PressableScaleStyle())
             }
+            
+            // AI问候卡片
+            aiGreetingCard
 
             if store.entries.isEmpty {
                 GeometryReader { geometry in
@@ -151,5 +176,31 @@ struct HomeView: View {
         case 18..<23: return "home.greeting.evening".localized(using: languageManager)
         default: return "home.greeting.night".localized(using: languageManager)
         }
+    }
+    
+    /// 处理AI问候语，限制最多两句话（以句号"。"为分隔）
+    private var processedAiGreeting: String {
+        let text = store.aiGreeting
+        // 找到所有句号的位置
+        var periods: [String.Index] = []
+        var searchIndex = text.startIndex
+        
+        while searchIndex < text.endIndex {
+            if let range = text.range(of: "。", range: searchIndex..<text.endIndex) {
+                periods.append(range.upperBound)
+                searchIndex = range.upperBound
+            } else {
+                break
+            }
+        }
+        
+        // 如果句号数量 <= 2，直接返回原文本
+        if periods.count <= 2 {
+            return text
+        }
+        
+        // 如果句号数量 > 2，只保留第二个句号及其之前的内容
+        let secondPeriodIndex = periods[1]
+        return String(text[..<secondPeriodIndex])
     }
 }

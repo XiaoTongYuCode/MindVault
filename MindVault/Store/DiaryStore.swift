@@ -5,20 +5,28 @@ import Combine
 @MainActor
 final class DiaryStore: ObservableObject {
     @Published var entries: [DiaryEntry] = []
+    @Published var aiGreeting: String = ""
 
     private let context: NSManagedObjectContext
     private var observer: NSObjectProtocol?
     private let analyzer = SentimentAnalyzer()
+    private let greetingKey = "com.mindvault.ai_greeting"
+    private let greetingEntriesHashKey = "com.mindvault.greeting_entries_hash"
+    private var isGeneratingGreeting = false
 
     init(context: NSManagedObjectContext) {
         self.context = context
         refresh()
+        // 应用启动时只加载缓存的问候语
+        loadCachedGreeting()
         observer = NotificationCenter.default.addObserver(
             forName: .NSManagedObjectContextObjectsDidChange,
             object: context,
             queue: .main
         ) { [weak self] _ in
             self?.refresh()
+            // 日记变化时触发问候语生成
+            self?.checkAndGenerateGreeting()
         }
     }
 
@@ -185,6 +193,9 @@ final class DiaryStore: ObservableObject {
                 }
             }
         }
+        
+        // 日记添加后，触发问候语生成
+        checkAndGenerateGreeting()
     }
 
     func deleteEntry(_ entry: DiaryEntry) {
@@ -192,6 +203,8 @@ final class DiaryStore: ObservableObject {
             context.delete(target)
             saveContext()
         }
+        // 删除日记后，触发问候语生成
+        checkAndGenerateGreeting()
     }
 
     private func refresh() {
@@ -201,6 +214,86 @@ final class DiaryStore: ObservableObject {
             entries = results.map { $0.toDiaryEntry() }
         } catch {
             entries = []
+        }
+    }
+    
+    /// 加载缓存的问候语
+    private func loadCachedGreeting() {
+        if let cached = UserDefaults.standard.string(forKey: greetingKey), !cached.isEmpty {
+            aiGreeting = cached
+        } else {
+            // 如果没有缓存的问候语，使用默认值
+            let savedLanguage = UserDefaults.standard.string(forKey: "app_language") ?? "zh-Hans"
+            aiGreeting = savedLanguage == "en" 
+                ? "Welcome! Start your first diary entry to begin your journey."
+                : "很高兴认识你！写下一篇日记，开始你的点滴记录叭～"
+        }
+    }
+    
+    /// 计算最近5条日记的哈希值，用于判断是否需要重新生成问候语
+    private func entriesHash() -> String {
+        let recentEntries = Array(entries.prefix(5))
+        let content = recentEntries.map { "\($0.id.uuidString)-\($0.updatedAt.timeIntervalSince1970)" }.joined(separator: "|")
+        return String(content.hashValue)
+    }
+    
+    /// 检查并生成问候语（如果日记有变化）
+    private func checkAndGenerateGreeting() {
+        // 如果正在生成，跳过
+        guard !isGeneratingGreeting else { return }
+        
+        // 如果没有日记，使用默认问候语
+        guard !entries.isEmpty else {
+            let savedLanguage = UserDefaults.standard.string(forKey: "app_language") ?? "zh-Hans"
+            aiGreeting = savedLanguage == "en" 
+                ? "Welcome! Start your first diary entry to begin your journey."
+                : "很高兴认识你！写下第一篇日记，开始你的记录之旅～"
+            return
+        }
+        
+        // 计算当前日记的哈希值
+        let currentHash = entriesHash()
+        let cachedHash = UserDefaults.standard.string(forKey: greetingEntriesHashKey)
+        
+        // 如果哈希值相同，说明日记没有变化，直接使用缓存的问候语
+        if currentHash == cachedHash {
+            return
+        }
+        
+        // 日记有变化，生成新的问候语
+        generateGreeting()
+    }
+    
+    /// 生成AI问候语
+    private func generateGreeting() {
+        guard !isGeneratingGreeting else { return }
+        guard !entries.isEmpty else { return }
+        
+        isGeneratingGreeting = true
+        
+        // 获取最近5条日记
+        let recentEntries = Array(entries.prefix(5))
+        
+        Task { [weak self] in
+            guard let self = self else { return }
+            
+            do {
+                let greeting = try await self.analyzer.generateGreeting(from: recentEntries)
+                
+                // 在主线程更新UI和缓存
+                await MainActor.run {
+                    self.aiGreeting = greeting
+                    UserDefaults.standard.set(greeting, forKey: self.greetingKey)
+                    UserDefaults.standard.set(self.entriesHash(), forKey: self.greetingEntriesHashKey)
+                    self.isGeneratingGreeting = false
+                }
+            } catch {
+                print("❌ 生成问候语失败：\(error.localizedDescription)")
+                // 生成失败时，保持原有问候语或使用默认值
+                await MainActor.run {
+                    self.isGeneratingGreeting = false
+                }
+            }
         }
     }
 

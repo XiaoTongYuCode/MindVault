@@ -2,6 +2,7 @@ import Foundation
 
 actor SentimentAnalyzer {
     private let model: LlamaModel
+    private let greetingModel: LlamaModel
     private let isEnglish: Bool
 
     init() {
@@ -108,6 +109,71 @@ actor SentimentAnalyzer {
             systemPrompt: prompt
         )
         model = LlamaModel(config: config)
+        
+        // 为问候语生成创建单独的模型配置
+        // 获取当前日期时间
+        let dateFormatter = DateFormatter()
+        if isEnglish {
+            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        } else {
+            dateFormatter.dateFormat = "yyyy年MM月dd日 HH:mm:ss"
+            dateFormatter.locale = Locale(identifier: "zh_CN")
+        }
+        let currentDateTime = dateFormatter.string(from: Date())
+        
+        let greetingPrompt: String
+        if isEnglish {
+            greetingPrompt = """
+            You are a thoughtful and empathetic AI assistant. Based on the user's recent diary entries, generate a warm, personalized greeting that shows understanding of their current state of mind and life situation.
+            
+            Current date and time: \(currentDateTime)
+            
+            Rules:
+            1. Read and understand the user's recent diary entries
+            2. Identify their emotional patterns, concerns, and life themes
+            3. Generate a brief, warm greeting (1 sentences, max 30 words)
+            4. Be empathetic and supportive
+            5. Reference their recent experiences naturally if appropriate
+            6. Consider the current date and time when generating the greeting
+            7. Output only the greeting text, no explanations or additional text
+            
+            Examples:
+            If user has been stressed about work: "I notice you've been dealing with work pressure lately. Take a moment to breathe and remember that you're doing your best."
+            If user has been happy: "It's wonderful to see your positive energy in recent entries. Keep that joy flowing!"
+            If user has been reflective: "Your thoughtful reflections show deep self-awareness. Continue exploring your inner world."
+            """
+        } else {
+            greetingPrompt = """
+            你是一个体贴且富有同理心的AI助手。根据用户最近的日记内容，生成一个温暖、个性化的问候语，展现对他们当前心理状态和生活情况的理解。
+            
+            当前日期时间：\(currentDateTime)
+            
+            规则：
+            1. 阅读并理解用户最近的日记内容
+            2. 识别他们的情绪模式、关注点和生活主题
+            3. 生成简短、温暖的问候语（1句话，最多30字）
+            4. 要富有同理心和支持性
+            5. 如果合适，自然地提及他们最近的经历
+            6. 生成问候语时考虑当前日期时间
+            7. 只输出问候语文本，不要解释或其他文字
+            
+            示例：
+            如果用户最近工作压力大："我注意到你最近在工作上有些压力。深呼吸一下，记住你已经尽力了。"
+            如果用户最近很开心："看到你最近的日记中充满正能量，真为你高兴！继续保持这份快乐。"
+            如果用户最近在思考："你的深度思考展现了很好的自我觉察。继续探索你的内心世界吧。"
+            """
+        }
+        
+        let greetingConfig = ModelConfig(
+            temperature: 0.7,  // 稍高的温度，让问候语更自然
+            topP: 0.9,
+            maxTokens: 128,   // 问候语不需要太长
+            contextSize: 2048, // 需要更大的上下文来理解多篇日记
+            batchSize: 256,
+            systemPrompt: greetingPrompt
+        )
+        greetingModel = LlamaModel(config: greetingConfig)
     }
 
     /// 在后台预热模型，避免首次分析时卡顿
@@ -115,6 +181,7 @@ actor SentimentAnalyzer {
     func warmUp() async {
         // 只触发底层模型加载，不进行完整推理，尽量减小预热时的算力与耗时
         model.warmUp()
+        greetingModel.warmUp()
     }
 
     func analyze(content: String) async throws -> (sentiment: DiaryEntry.Sentiment, tag: DiaryTag?) {
@@ -294,6 +361,52 @@ actor SentimentAnalyzer {
             // 中文环境下，使用中文标签解析
             return DiaryTag.from(chineseTag: tagString)
         }
+    }
+    
+    /// 根据最近的日记生成个性化问候语
+    /// - Parameter recentEntries: 最近的日记条目（最多10条）
+    /// - Returns: 个性化的问候语
+    func generateGreeting(from recentEntries: [DiaryEntry]) async throws -> String {
+        guard !recentEntries.isEmpty else {
+            // 如果没有日记，返回默认问候语
+            return isEnglish ? "Welcome! Start your first diary entry to begin your journey." : "欢迎！写下第一篇日记，开始你的记录之旅。"
+        }
+        
+        // 构建日记内容摘要（最多10条）
+        let entriesToAnalyze = Array(recentEntries.prefix(10))
+        var diaryContent = ""
+        for (index, entry) in entriesToAnalyze.enumerated() {
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .short
+            let dateStr = dateFormatter.string(from: entry.createdAt)
+            diaryContent += "[\(dateStr)] \(entry.content)\n"
+        }
+        
+        let userMessage = isEnglish 
+            ? "Based on these recent diary entries, generate a personalized greeting:\n\n\(diaryContent)"
+            : "根据以下最近的日记内容，生成一个问候语：\n\n\(diaryContent)"
+        
+        let messages = [Message(role: .user, content: userMessage)]
+        let raw = try await greetingModel.generateAsync(messages: messages)
+        
+        // 清理输出，移除可能的代码块标记
+        var greeting = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // 移除可能的引号
+        if greeting.hasPrefix("\"") && greeting.hasSuffix("\"") {
+            greeting = String(greeting.dropFirst().dropLast())
+        }
+        
+        // 移除可能的代码块标记
+        if greeting.hasPrefix("```") {
+            if let endIndex = greeting.range(of: "```", range: greeting.index(after: greeting.startIndex)..<greeting.endIndex)?.upperBound {
+                greeting = String(greeting[endIndex...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        
+        return greeting.isEmpty 
+            ? (isEnglish ? "Welcome back! How are you feeling today?" : "欢迎回来！今天感觉怎么样？")
+            : greeting
     }
 }
 
