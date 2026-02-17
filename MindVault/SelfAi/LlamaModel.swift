@@ -350,37 +350,115 @@ class LlamaModel {
             throw ModelError.modelNotLoaded
         }
         
-        var batch = llama_batch_init(512, 0, 1)
-        defer { llama_batch_free(batch) }
-        
-        // 准备批次
-        batch.n_tokens = Int32(tokens.count)
-        for i in 0..<tokens.count {
-            let idx = Int(i)
-            batch.token[idx] = tokens[idx]
-            batch.pos[idx] = Int32(i)
-            batch.n_seq_id[idx] = 1
-            
-            // 安全地设置 seq_id，添加指针有效性检查
-            // seq_id 是一个指向指针数组的指针，每个元素指向一个序列 ID 数组
-            if let seq_ids = batch.seq_id {
-                let seq_id_ptr = seq_ids.advanced(by: idx)
-                // 检查指针是否有效（不为 nil）
-                if let seq_id = seq_id_ptr.pointee {
-                    // 使用 withMemoryRebound 安全地访问序列 ID 数组（序列 ID 通常是 Int32）
-                    seq_id.withMemoryRebound(to: Int32.self, capacity: 1) { seqIdArray in
-                        seqIdArray[0] = 0
-                    }
-                }
-            }
-            
-            // 只有最后一个 token 需要计算 logits
-            batch.logits[idx] = (i == tokens.count - 1) ? 1 : 0
+        // 确保 batch 大小足够容纳所有 tokens，但不超过配置的最大值
+        let batchSize = min(Int(config.batchSize), tokens.count)
+        guard batchSize > 0 else {
+            throw ModelError.tokenizationFailed
         }
         
-        // 评估
-        guard llama_decode(context, batch) == 0 else {
-            throw ModelError.decodeFailed
+        // 如果 tokens 数量超过 batch 大小，需要分批处理
+        if tokens.count > batchSize {
+            // 分批处理：先处理前面的完整批次（不需要 logits）
+            var processedCount = 0
+            let fullBatches = tokens.count / batchSize
+            
+            // 处理完整的批次
+            for _ in 0..<fullBatches {
+                var batch = llama_batch_init(Int32(batchSize), 0, 1)
+                defer { llama_batch_free(batch) }
+                
+                batch.n_tokens = Int32(batchSize)
+                for i in 0..<batchSize {
+                    let idx = Int(i)
+                    let tokenIdx = processedCount + idx
+                    batch.token[idx] = tokens[tokenIdx]
+                    batch.pos[idx] = Int32(tokenIdx)
+                    batch.n_seq_id[idx] = 1
+                    
+                    // 安全地设置 seq_id
+                    if let seq_ids = batch.seq_id {
+                        let seq_id_ptr = seq_ids.advanced(by: idx)
+                        if let seq_id = seq_id_ptr.pointee {
+                            seq_id.withMemoryRebound(to: Int32.self, capacity: 1) { seqIdArray in
+                                seqIdArray[0] = 0
+                            }
+                        }
+                    }
+                    
+                    // 这批 tokens 都不需要 logits
+                    batch.logits[idx] = 0
+                }
+                
+                // 评估这一批
+                guard llama_decode(context, batch) == 0 else {
+                    throw ModelError.decodeFailed
+                }
+                
+                processedCount += batchSize
+            }
+            
+            // 处理最后一批剩余的 tokens（最后一个 token 需要 logits）
+            let remainingCount = tokens.count - processedCount
+            if remainingCount > 0 {
+                var finalBatch = llama_batch_init(Int32(remainingCount), 0, 1)
+                defer { llama_batch_free(finalBatch) }
+                
+                finalBatch.n_tokens = Int32(remainingCount)
+                for i in 0..<remainingCount {
+                    let idx = Int(i)
+                    let tokenIdx = processedCount + idx
+                    finalBatch.token[idx] = tokens[tokenIdx]
+                    finalBatch.pos[idx] = Int32(tokenIdx)
+                    finalBatch.n_seq_id[idx] = 1
+                    
+                    // 安全地设置 seq_id
+                    if let seq_ids = finalBatch.seq_id {
+                        let seq_id_ptr = seq_ids.advanced(by: idx)
+                        if let seq_id = seq_id_ptr.pointee {
+                            seq_id.withMemoryRebound(to: Int32.self, capacity: 1) { seqIdArray in
+                                seqIdArray[0] = 0
+                            }
+                        }
+                    }
+                    
+                    // 只有最后一个 token 需要 logits
+                    finalBatch.logits[idx] = (idx == remainingCount - 1) ? 1 : 0
+                }
+                
+                guard llama_decode(context, finalBatch) == 0 else {
+                    throw ModelError.decodeFailed
+                }
+            }
+        } else {
+            // tokens 数量在 batch 大小内，一次性处理
+            var batch = llama_batch_init(Int32(batchSize), 0, 1)
+            defer { llama_batch_free(batch) }
+            
+            batch.n_tokens = Int32(tokens.count)
+            for i in 0..<tokens.count {
+                let idx = Int(i)
+                batch.token[idx] = tokens[idx]
+                batch.pos[idx] = Int32(i)
+                batch.n_seq_id[idx] = 1
+                
+                // 安全地设置 seq_id
+                if let seq_ids = batch.seq_id {
+                    let seq_id_ptr = seq_ids.advanced(by: idx)
+                    if let seq_id = seq_id_ptr.pointee {
+                        seq_id.withMemoryRebound(to: Int32.self, capacity: 1) { seqIdArray in
+                            seqIdArray[0] = 0
+                        }
+                    }
+                }
+                
+                // 只有最后一个 token 需要计算 logits
+                batch.logits[idx] = (i == tokens.count - 1) ? 1 : 0
+            }
+            
+            // 评估
+            guard llama_decode(context, batch) == 0 else {
+                throw ModelError.decodeFailed
+            }
         }
     }
     
@@ -398,10 +476,10 @@ class LlamaModel {
         var lastGeneratedTokens: [llama_token] = []
         let maxPenaltyTokens = 10
         
-        // 在 GPU 队列上初始化 batch
+        // 在 GPU 队列上初始化 batch（使用配置的 batchSize）
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             gpuQueue.async {
-                batch = llama_batch_init(512, 0, 1)
+                batch = llama_batch_init(Int32(self.config.batchSize), 0, 1)
                 continuation.resume()
             }
         }
@@ -460,12 +538,24 @@ class LlamaModel {
                     let currentBatch = batchPointer.pointee
                     
                     // 获取 logits
-                    // 第一次循环：从 prompt 的最后一个 token 获取（位置 promptTokenCount - 1）
+                    // 第一次循环：从 prompt 的最后一个 token 获取
                     // 后续循环：从 batch 的最后一个 token 获取（位置 batch.n_tokens - 1，即 0）
                     let logitsIndex: Int32
                     if currentBatch.n_tokens == 0 {
                         // 第一次循环，从 prompt 的最后一个 token 获取
-                        logitsIndex = Int32(promptTokenCount - 1)
+                        // 注意：llama_get_logits_ith 返回的是最后一批 batch 中的 logits
+                        // 如果 prompt 的 token 数量超过 batch 大小，需要计算最后一批的最后一个 token 在 batch 中的索引
+                        let batchSize = Int32(self.config.batchSize)
+                        if promptTokenCount > Int(batchSize) {
+                            // prompt 被分批处理，计算最后一批的最后一个 token 在 batch 中的索引
+                            let remainingCount = promptTokenCount % Int(batchSize)
+                            // 如果余数为 0，说明最后一批正好是完整的 batch，最后一个 token 的索引是 batchSize - 1
+                            // 否则，最后一个 token 的索引是 remainingCount - 1
+                            logitsIndex = remainingCount == 0 ? (batchSize - 1) : Int32(remainingCount - 1)
+                        } else {
+                            // prompt 在一个 batch 内，直接使用 promptTokenCount - 1
+                            logitsIndex = Int32(promptTokenCount - 1)
+                        }
                     } else {
                         // 后续循环，从 batch 的最后一个 token 获取
                         logitsIndex = currentBatch.n_tokens - 1

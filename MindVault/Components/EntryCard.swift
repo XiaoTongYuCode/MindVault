@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 
 struct EntryCard: View {
     let entry: DiaryEntry
@@ -37,8 +38,10 @@ struct EntryCard: View {
             }
             
             // 内容（如果title是content的开头内容则不展示）
-            if !entry.content.hasPrefix(entry.title) {
-                Text(entry.content)
+            let titleForComparison = entry.title.hasSuffix("...") ? String(entry.title.dropLast(3)) : entry.title
+            if !entry.content.hasPrefix(titleForComparison) {
+                let processedContent = entry.content.replacingMultipleNewlines()
+                Text(processedContent)
                     .font(.system(size: 14))
                     .foregroundColor(MVTheme.muted)
                     .lineLimit(2)
@@ -64,6 +67,7 @@ struct EntryCard: View {
             if let sentiment = entry.sentiment {
                 let display = SentimentDisplay.from(sentiment: sentiment)
                 AnimatedEmojiView(emoji: sentiment.emoji, imageName: display.imageName, size: 28, animated: false)
+                    .id("\(entry.id.uuidString)-\(sentiment.emoji)") // 确保 emoji 变化时视图更新
                     .padding(10)
             } else if entry.isAnalyzing {
                 // 分析过程中显示蓝色线条加载进度圈
@@ -80,6 +84,24 @@ struct EntryCard: View {
                 .font(.system(size: 12, weight: .medium))
         }
         .foregroundColor(MVTheme.primary)
+    }
+}
+
+extension String {
+    /// 将多个连续换行符替换为一个换行符
+    func replacingMultipleNewlines() -> String {
+        do {
+            let regex = try NSRegularExpression(pattern: #"\n\s*\n+"#, options: [])
+            let range = NSRange(location: 0, length: self.utf16.count)
+            return regex.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: "\n")
+        } catch {
+            // 如果正则表达式失败，使用简单的替换方法
+            var result = self
+            while result.contains("\n\n") {
+                result = result.replacingOccurrences(of: "\n\n", with: "\n")
+            }
+            return result
+        }
     }
 }
 

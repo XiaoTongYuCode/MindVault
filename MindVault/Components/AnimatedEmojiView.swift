@@ -43,6 +43,16 @@ struct AnimatedEmojiView: View {
         .onAppear {
             loadImage()
         }
+        .onChange(of: emoji) { _ in
+            // 当 emoji 变化时，重置图片并重新加载
+            uiImage = nil
+            loadImage()
+        }
+        .onChange(of: imageName) { _ in
+            // 当 imageName 变化时，重置图片并重新加载
+            uiImage = nil
+            loadImage()
+        }
     }
     
     private func loadImage() {

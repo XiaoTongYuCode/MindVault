@@ -27,12 +27,15 @@
 "home.empty.action" = "写日记";
 
 // Entries View
-"entries.title" = "日记列表";
-"entries.subtitle" = "全部日记按时间倒序";
+"entries.title" = "我的日记";
 "entries.new.button" = "新日记";
 "entries.empty.title" = "暂无日记";
 "entries.empty.message" = "写下你的第一篇日记，开始记录心情。";
 "entries.empty.action" = "写日记";
+"entries.search.placeholder" = "搜索日记...";
+"entries.filter.all" = "全部";
+"entries.filter.title" = "按类型筛选";
+"entries.filter.noResults" = "没有找到匹配的日记。";
 
 // Compose View
 "compose.title" = "随记";
@@ -50,6 +53,7 @@
 "compose.speech.permission.message" = "请在设置中允许访问麦克风和语音识别功能。";
 "compose.speech.permission.settings" = "前往设置";
 "compose.speech.error" = "语音识别错误";
+"compose.image.remove" = "删除图片";
 
 // Entry Detail View
 "entry.detail.title" = "日记详情";

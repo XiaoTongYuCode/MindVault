@@ -5,6 +5,7 @@ struct EntryDetailView: View {
     let entry: DiaryEntry
     @Environment(\.dismiss) private var dismiss
     @State private var showDelete = false
+    @State private var selectedImageIndex: Int?
 
     var body: some View {
         ScrollView {
@@ -19,18 +20,45 @@ struct EntryDetailView: View {
                     }
                 }
                 .fadeIn()
-                Text(entry.title)
+                Text(entry.title.replacingOccurrences(of: #"\r\n|\r|\n"#, with: " ", options: .regularExpression).replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression).trimmingCharacters(in: .whitespaces))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(MVTheme.foreground)
                     .fadeIn()
+
+                // 图片预览区域：放在标题下方，和撰写界面保持一致的结构（详情里尺寸更大一些）
+                if !entry.images.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(Array(entry.images.enumerated()), id: \.element.id) { index, image in
+                                if let uiImage = UIImage(data: image.data) {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(height: 150)
+                                        .clipped()
+                                        .cornerRadius(16)
+                                        .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 3)
+                                        .onTapGesture {
+                                            selectedImageIndex = index
+                                        }
+                                }
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .fadeIn()
+                }
+
                 Text(entry.content)
                     .font(.system(size: 17))
                     .foregroundColor(MVTheme.foreground)
                     .lineSpacing(8)
                     .fadeIn()
 
-                sentimentCard
-                    .fadeIn()
+                if !entry.isAnalyzing {
+                    sentimentCard
+                        .fadeIn()
+                }
             }
             .padding(.horizontal, 20)
             .padding(.top, 16)
@@ -57,6 +85,16 @@ struct EntryDetailView: View {
             }
         } message: {
             Text("entry.detail.delete.alert.message".localized)
+        }
+        .fullScreenCover(item: Binding(
+            get: { selectedImageIndex },
+            set: { selectedImageIndex = $0 }
+        )) { index in
+            ImageGalleryView(
+                images: entry.images,
+                currentIndex: index,
+                onDismiss: { selectedImageIndex = nil }
+            )
         }
     }
 
@@ -105,4 +143,65 @@ struct EntryDetailView: View {
         )
         .padding(.top, 16)
     }
+}
+
+// MARK: - Image Gallery View
+struct ImageGalleryView: View {
+    let images: [DiaryImage]
+    let currentIndex: Int
+    let onDismiss: () -> Void
+    
+    @State private var selectedIndex: Int
+    
+    init(images: [DiaryImage], currentIndex: Int, onDismiss: @escaping () -> Void) {
+        self.images = images
+        self.currentIndex = currentIndex
+        self.onDismiss = onDismiss
+        _selectedIndex = State(initialValue: currentIndex)
+    }
+    
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            
+            VStack {
+                // Top bar with close button
+                HStack {
+                    Spacer()
+                    Button {
+                        onDismiss()
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 26, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.9))
+                    }
+                }
+                .padding()
+                .zIndex(1)
+                
+                // Image gallery with TabView
+                TabView(selection: $selectedIndex) {
+                    ForEach(Array(images.enumerated()), id: \.element.id) { index, image in
+                        if let uiImage = UIImage(data: image.data) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .padding()
+                                .tag(index)
+                                .onTapGesture {
+                                    onDismiss()
+                                }
+                        }
+                    }
+                }
+                .tabViewStyle(.page)
+                .indexViewStyle(.page(backgroundDisplayMode: .always))
+            }
+        }
+    }
+}
+
+// MARK: - Int Identifiable Extension
+extension Int: Identifiable {
+    public var id: Int { self }
 }

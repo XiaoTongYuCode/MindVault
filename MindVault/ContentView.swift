@@ -6,6 +6,7 @@ struct ContentView: View {
     @StateObject private var store: DiaryStore
     @EnvironmentObject var languageManager: LanguageManager
     @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showCompose = false
     @State private var selectedTab = 0
     @State private var homeNavigationPath = NavigationPath()
@@ -88,10 +89,15 @@ struct ContentView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
-        // App 启动后，在真正的后台任务中预热情感分析模型（以及底层 Llama 模型），避免阻塞主线程
-        .task {
-            Task.detached(priority: .background) {
-                await store.warmUpSentimentAnalyzer()
+        // App 启动后，在后台预热情感分析模型（以及底层 Llama 模型），避免阻塞主线程
+        .onAppear {
+            store.warmUpSentimentAnalyzer()
+        }
+        // 当应用从后台重新进入前台时，也触发失败日记重算
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            // 从后台或非活跃状态变为活跃状态时，触发重算
+            if oldPhase != .active && newPhase == .active {
+                store.warmUpSentimentAnalyzer()
             }
         }
     }

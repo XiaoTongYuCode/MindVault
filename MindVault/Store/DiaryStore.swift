@@ -23,8 +23,87 @@ final class DiaryStore: ObservableObject {
     }
 
     /// 在应用启动后预热情感分析模型，避免第一次保存日记时长时间等待
-    func warmUpSentimentAnalyzer() async {
-        await analyzer.warmUp()
+    /// 同时检查并重新分析之前分析失败的日记
+    /// 此方法立即返回，所有工作都在后台异步执行，不会阻塞主线程
+    func warmUpSentimentAnalyzer() {
+        // 在后台异步执行预热和重新分析，不阻塞主线程
+        Task { [weak self] in
+            guard let self = self else { return }
+            
+            // 预热情感分析模型
+            await self.analyzer.warmUp()
+            
+            // 查询所有分析失败的日记（sentimentLabel == "mood.neutral" 且 sentimentSummary == "entry.analysis.failed"）
+            let request = DiaryEntryEntity.fetchRequestAll()
+            request.predicate = NSPredicate(
+                format: "sentimentLabel == %@ AND sentimentSummary == %@",
+                "mood.neutral",
+                "entry.analysis.failed"
+            )
+            
+            let failedEntries: [DiaryEntryEntity]
+            do {
+                failedEntries = try self.context.fetch(request)
+            } catch {
+                print("❌ 查询分析失败的日记时出错：\(error.localizedDescription)")
+                return
+            }
+            
+            // 如果有失败的日记，在后台重新分析
+            if !failedEntries.isEmpty {
+                print("📝 发现 \(failedEntries.count) 条分析失败的日记，开始重新分析...")
+                for entity in failedEntries {
+                    // reanalyzeEntry 内部使用 Task 异步执行，不需要 await
+                    self.reanalyzeEntry(entity: entity)
+                }
+            }
+        }
+    }
+    
+    /// 重新分析指定的日记条目
+    private func reanalyzeEntry(entity: DiaryEntryEntity) {
+        let entryID = entity.id
+        let content = entity.content
+        
+        // 标记为正在分析
+        entity.isAnalyzing = true
+        saveContext()
+        
+        // 在后台异步执行情感分析，不阻塞主线程
+        // 使用 Task 来启动异步工作，类似于 addEntry 的实现方式
+        Task { [weak self] in
+            guard let self = self else { return }
+            
+            do {
+                // 重新执行情感分析
+                let result = try await self.analyzer.analyze(content: content)
+                
+                // 分析完成后，在主线程更新 Core Data（DiaryStore 是 @MainActor）
+                if let target = self.fetchEntity(id: entryID) {
+                    target.sentimentScore = NSNumber(value: result.sentiment.score)
+                    target.sentimentLabel = result.sentiment.label
+                    target.sentimentEmoji = result.sentiment.emoji
+                    target.sentimentSummary = result.sentiment.summary
+                    target.tag = result.tag?.rawValue
+                    target.isAnalyzing = false
+                    target.updatedAt = Date()
+                    self.saveContext()
+                    print("✅ 重新分析成功，日记ID：\(entryID.uuidString)")
+                }
+            } catch {
+                // 重新分析失败，保持失败状态
+                print("❌ 重新分析失败，日记ID：\(entryID.uuidString)")
+                print("   错误类型：\(type(of: error))")
+                print("   错误描述：\(error.localizedDescription)")
+                
+                // 更新分析状态为失败
+                if let target = self.fetchEntity(id: entryID) {
+                    target.isAnalyzing = false
+                    target.updatedAt = Date()
+                    self.saveContext()
+                }
+            }
+        }
     }
 
     deinit {
@@ -33,7 +112,7 @@ final class DiaryStore: ObservableObject {
         }
     }
 
-    func addEntry(title: String, content: String) {
+    func addEntry(title: String, content: String, images: [Data] = []) {
         let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
@@ -51,6 +130,15 @@ final class DiaryStore: ObservableObject {
         entity.createdAt = now
         entity.updatedAt = now
         entity.isAnalyzing = true
+
+        // 保存圖片
+        for (index, data) in images.enumerated() {
+            let imageEntity = DiaryImageEntity(context: context)
+            imageEntity.id = UUID()
+            imageEntity.imageData = data
+            imageEntity.orderIndex = Int16(index)
+            imageEntity.entry = entity
+        }
 
         saveContext()
 
@@ -136,26 +224,30 @@ final class DiaryStore: ObservableObject {
     
     private let draftTitleKey = "com.mindvault.draft.title"
     private let draftContentKey = "com.mindvault.draft.content"
+    private let draftImagesKey = "com.mindvault.draft.images"
     
     /// 保存草稿
-    func saveDraft(title: String, content: String) {
+    func saveDraft(title: String, content: String, images: [Data]) {
         UserDefaults.standard.set(title, forKey: draftTitleKey)
         UserDefaults.standard.set(content, forKey: draftContentKey)
+        UserDefaults.standard.set(images, forKey: draftImagesKey)
     }
     
     /// 加载草稿
-    func loadDraft() -> (title: String, content: String)? {
+    func loadDraft() -> (title: String, content: String, images: [Data])? {
         guard let title = UserDefaults.standard.string(forKey: draftTitleKey),
               let content = UserDefaults.standard.string(forKey: draftContentKey) else {
             return nil
         }
-        return (title: title, content: content)
+        let images = UserDefaults.standard.array(forKey: draftImagesKey) as? [Data] ?? []
+        return (title: title, content: content, images: images)
     }
     
     /// 清除草稿
     func clearDraft() {
         UserDefaults.standard.removeObject(forKey: draftTitleKey)
         UserDefaults.standard.removeObject(forKey: draftContentKey)
+        UserDefaults.standard.removeObject(forKey: draftImagesKey)
     }
 
 }

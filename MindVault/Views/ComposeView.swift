@@ -1,12 +1,14 @@
 import SwiftUI
 import Speech
+import PhotosUI
 
 struct ComposeView: View {
     @ObservedObject var store: DiaryStore
     @Environment(\.dismiss) private var dismiss
     @State private var title: String = ""
     @State private var content: String = ""
-    @State private var showDiscardAlert = false
+    @State private var selectedItems: [PhotosPickerItem] = []
+    @State private var imageDatas: [Data] = []
     @State private var showEmptyAlert = false
     @State private var showSpeechPermissionAlert = false
     @State private var showSpeechErrorAlert = false
@@ -16,75 +18,36 @@ struct ComposeView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(spacing: 8) {
-                    TextField("compose.title.placeholder".localized, text: $title)
-                        .font(.system(size: 22, weight: .semibold))
-                        .padding(.horizontal, 8)
-                    Rectangle()
-                        .fill(MVTheme.border)
-                        .frame(height: 1)
-                }
-                .fadeIn()
+            mainContent
+        }
+    }
 
-                ZStack(alignment: .topLeading) {
-                    if content.isEmpty {
-                        Text("compose.content.placeholder".localized)
-                            .font(.system(size: 18))
-                            .foregroundColor(MVTheme.muted)
-                            .padding(.top, 8)
-                            .padding(.leading, 6)
-                    }
-                    TextEditor(text: $content)
-                        .font(.system(size: 18))
-                        .scrollContentBackground(.hidden) // 隐藏系统默认背景
-                        .background(Color.clear) // 设为透明背景
-                        .focused($isContentFocused)
-                        .frame(maxHeight: .infinity)
-                }
-                .padding(.horizontal, 4)
-                .fadeIn()
-                .overlay(alignment: .bottom) {
-                    // 语音输入按钮
-                    Button {
-                        handleSpeechButtonTap()
-                    } label: {
-                        Image(systemName: speechRecognizer.isRecording ? "mic.fill" : "mic")
-                            .font(.system(size: 20))
-                            .foregroundColor(speechRecognizer.isRecording ? .red : MVTheme.foreground)
-                            .frame(width: 44, height: 44)
-                            .background(
-                                Circle()
-                                    .fill(speechRecognizer.isRecording ? Color.red.opacity(0.1) : MVTheme.background)
-                                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-                            )
-                            .scaleEffect(speechRecognizer.isRecording ? 1.1 : 1.0)
-                    }
-                    .padding(.bottom, 12)
-                    .animation(AnimationHelpers.quickSpring, value: speechRecognizer.isRecording)
-                }
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .background(MVTheme.background.ignoresSafeArea())
+    /// 主体内容视图，拆出来降低单个表达式复杂度，避免编译器 type-check 超时
+    private var mainContent: some View {
+        editorCore
             .onAppear {
                 // 加载草稿
                 if let draft = store.loadDraft() {
                     title = draft.title
                     content = draft.content
+                    imageDatas = draft.images
                 }
                 // 需要一点点延迟，确保视图已经在层级中再请求焦点
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                     isContentFocused = true
                 }
             }
             .onChange(of: title) { _, newValue in
                 // 自动保存草稿
-                store.saveDraft(title: newValue, content: content)
+                store.saveDraft(title: newValue, content: content, images: imageDatas)
             }
             .onChange(of: content) { _, newValue in
                 // 自动保存草稿
-                store.saveDraft(title: title, content: newValue)
+                store.saveDraft(title: title, content: newValue, images: imageDatas)
+            }
+            .onChange(of: imageDatas) { _, newImages in
+                // 图片变更时也自动保存草稿
+                store.saveDraft(title: title, content: content, images: newImages)
             }
             .onChange(of: speechRecognizer.recognizedText) { _, newText in
                 // 将识别的文本追加到内容中
@@ -113,6 +76,21 @@ struct ComposeView: View {
                     contentBeforeRecording = ""
                 }
             }
+            .onChange(of: selectedItems) { _, newItems in
+                guard !newItems.isEmpty else { return }
+                Task {
+                    var newDatas: [Data] = []
+                    for item in newItems {
+                        if let data = try? await item.loadTransferable(type: Data.self) {
+                            newDatas.append(data)
+                        }
+                    }
+                    await MainActor.run {
+                        imageDatas.append(contentsOf: newDatas)
+                        selectedItems.removeAll()
+                    }
+                }
+            }
             .navigationTitle("compose.title".localized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -128,15 +106,7 @@ struct ComposeView: View {
             .alert("compose.empty.alert".localized, isPresented: $showEmptyAlert) {
                 Button("compose.empty.alert.ok".localized, role: .cancel) {}
             }
-            .alert("compose.discard.alert.title".localized, isPresented: $showDiscardAlert) {
-                Button("compose.discard.alert.continue".localized, role: .cancel) {}
-                Button("compose.discard.alert.save".localized, role: .destructive) {
-                    // 放弃时不清除草稿，保留以便后续继续编辑
-                    dismiss()
-                }
-            } message: {
-                Text("compose.discard.alert.message".localized)
-            }
+            // 退出时不再弹确认框，直接在 handleCancel 中保存草稿并关闭
             .alert("compose.speech.permission.title".localized, isPresented: $showSpeechPermissionAlert) {
                 Button("compose.speech.permission.settings".localized) {
                     if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
@@ -159,7 +129,110 @@ struct ComposeView: View {
             .onChange(of: speechRecognizer.errorMessage) { _, newValue in
                 showSpeechErrorAlert = newValue != nil
             }
+    }
+
+    /// 编辑区域主体：标题输入、图片预览、正文 + 底部工具条
+    private var editorCore: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(spacing: 8) {
+                TextField("compose.title.placeholder".localized, text: $title)
+                    .font(.system(size: 20, weight: .semibold))
+                    .padding(.horizontal, 8)
+                Rectangle()
+                    .fill(MVTheme.border)
+                    .frame(height: 1)
+            }
+            .fadeIn()
+
+            // 已选图片预览区域（可选，横向滚动）
+            if !imageDatas.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(Array(imageDatas.enumerated()), id: \.offset) { index, data in
+                            if let uiImage = UIImage(data: data) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 90, height: 90)
+                                    .clipped()
+                                    .cornerRadius(12)
+                                    .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
+                                    .contextMenu {
+                                        Button(role: .destructive) {
+                                            imageDatas.remove(at: index)
+                                        } label: {
+                                            Label("compose.image.remove".localized, systemImage: "trash")
+                                        }
+                                    }
+                            }
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+                .frame(height: 100)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+                .animation(AnimationHelpers.smoothSpring, value: imageDatas.count)
+            }
+
+            ZStack(alignment: .topLeading) {
+                if content.isEmpty {
+                    Text("compose.content.placeholder".localized)
+                        .font(.system(size: 18))
+                        .foregroundColor(MVTheme.muted)
+                        .padding(.top, 8)
+                        .padding(.leading, 6)
+                }
+                TextEditor(text: $content)
+                    .font(.system(size: 18))
+                    .scrollContentBackground(.hidden) // 隐藏系统默认背景
+                    .background(Color.clear) // 设为透明背景
+                    .focused($isContentFocused)
+                    .frame(maxHeight: .infinity)
+            }
+            .padding(.horizontal, 4)
+            .fadeIn()
+            .overlay(alignment: .bottom) {
+                HStack(spacing: 16) {
+                    // 语音输入按钮
+                    Button {
+                        handleSpeechButtonTap()
+                    } label: {
+                        Image(systemName: speechRecognizer.isRecording ? "mic.fill" : "mic")
+                            .font(.system(size: 20))
+                            .foregroundColor(speechRecognizer.isRecording ? .red : MVTheme.foreground)
+                            .frame(width: 44, height: 44)
+                            .background(
+                                Circle()
+                                    .fill(speechRecognizer.isRecording ? Color.red.opacity(0.1) : MVTheme.background)
+                                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+                            )
+                            .scaleEffect(speechRecognizer.isRecording ? 1.1 : 1.0)
+                    }
+
+                    // 选图按钮
+                    PhotosPicker(
+                        selection: $selectedItems,
+                        maxSelectionCount: 9,
+                        matching: .images
+                    ) {
+                        Image(systemName: "photo.on.rectangle")
+                            .font(.system(size: 20))
+                            .foregroundColor(MVTheme.foreground)
+                            .frame(width: 44, height: 44)
+                            .background(
+                                Circle()
+                                    .fill(MVTheme.background)
+                                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+                            )
+                    }
+                }
+                .padding(.bottom, 12)
+                .animation(AnimationHelpers.quickSpring, value: speechRecognizer.isRecording)
+            }
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .background(MVTheme.background.ignoresSafeArea())
     }
 
     private func handleSave() {
@@ -168,7 +241,7 @@ struct ComposeView: View {
             showEmptyAlert = true
             return
         }
-        store.addEntry(title: title, content: content)
+        store.addEntry(title: title, content: content, images: imageDatas)
         // 保存成功后清除草稿
         store.clearDraft()
         dismiss()
@@ -183,15 +256,16 @@ struct ComposeView: View {
         let trimmedContent = content.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        if trimmedContent.isEmpty && trimmedTitle.isEmpty {
-            // 内容为空时直接退出，清除草稿
+        if trimmedContent.isEmpty && trimmedTitle.isEmpty && imageDatas.isEmpty {
+            // 文本和图片都为空时直接退出，清除草稿
             store.clearDraft()
-            dismiss()
         } else {
-            // 有内容时保存草稿并显示确认对话框
-            store.saveDraft(title: title, content: content)
-            showDiscardAlert = true
+            // 有文本或图片时保存草稿，方便下次继续编辑
+            store.saveDraft(title: title, content: content, images: imageDatas)
         }
+        
+        // 统一在最后关闭页面
+        dismiss()
     }
     
     private func handleSpeechButtonTap() {

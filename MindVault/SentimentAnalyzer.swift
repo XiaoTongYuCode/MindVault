@@ -23,65 +23,88 @@ actor SentimentAnalyzer {
             Analyze diary sentiment and tag, output JSON format.
             
             Output format (must strictly follow, output JSON only, no other text):
-            {"score": 0.8, "summary": "Feeling great today", "tag": "Work"}
+            {"score": 0.8, "sentimentType": "positive", "summary": "Feeling great today", "tag": "Work"}
+            
+            JSON Schema:
+            {
+              "score": number (0.0-1.0),
+              "sentimentType": "positive" | "negative",
+              "summary": string,
+              "tag": "Study" | "Work" | "Family" | "Health" | "Travel" | "Hobby" | "Relationship" | "Reflection" | "Other"
+            }
             
             Rules:
-            1. score is a number from -1.0 to 1.0: 1.0 most positive, -1.0 most negative, 0.0 neutral
-            2. summary is a brief English description of mood, guide user to think positively
-            3. score and summary must be consistent: positive mood uses positive number, negative mood uses negative number
-            4. tag must be one of: Study, Work, Family, Health, Travel, Hobby, Relationship, Reflection, Other
-            5. Choose the most appropriate tag based on diary content, if none fits then choose "Other"
+            1. score: 0.0 = neutral/weak emotion, 1.0 = very strong emotion
+            2. sentimentType: "positive" for happy/good feelings, "negative" for sad/bad feelings
+            3. summary: brief English description, guide user to think positively
+            4. score and sentimentType must be consistent
+            5. tag: choose the most appropriate one, or "Other" if none fits
             6. Output JSON only, no code block markers, no explanatory text
             
             Examples:
             Input: "Got paid today, very happy"
-            Output: {"score": 0.7, "summary": "Getting paid brings joy, keep up the good mood", "tag": "Work"}
+            Output: {"score": 0.7, "sentimentType": "positive", "summary": "Getting paid brings joy, keep up the good mood", "tag": "Work"}
             
             Input: "Work pressure is high, very tired"
-            Output: {"score": -0.5, "summary": "Work pressure needs adjustment, try to relax and rest", "tag": "Work"}
+            Output: {"score": 0.5, "sentimentType": "negative", "summary": "Work pressure needs adjustment, try to relax and rest", "tag": "Work"}
             
             Input: "Watched a movie with my girlfriend today, very happy"
-            Output: {"score": 0.8, "summary": "Spending quality time with loved one, cherish the moment", "tag": "Relationship"}
+            Output: {"score": 0.8, "sentimentType": "positive", "summary": "Spending quality time with loved one, cherish the moment", "tag": "Relationship"}
             
             Input: "Learned new programming knowledge today"
-            Output: {"score": 0.6, "summary": "Learning brings growth, keep it up", "tag": "Study"}
+            Output: {"score": 0.6, "sentimentType": "positive", "summary": "Learning brings growth, keep it up", "tag": "Study"}
+            
+            Input: "Feeling okay today, nothing special"
+            Output: {"score": 0.2, "sentimentType": "positive", "summary": "A peaceful day, appreciate the calm moments", "tag": "Other"}
             """
         } else {
             prompt = """
             分析日记情感和标签，输出JSON格式。
             
             输出格式（必须严格遵循，只输出JSON，不要其他文字）：
-            {"score": 0.8, "summary": "今天心情很好", "tag": "工作"}
+            {"score": 0.8, "sentimentType": "正面情绪", "summary": "今天心情很好", "tag": "工作"}
+            
+            JSON结构定义：
+            {
+              "score": 数字 (0.0-1.0),
+              "sentimentType": "正面情绪" | "负面情绪",
+              "summary": 字符串,
+              "tag": "学习" | "工作" | "家庭" | "健康" | "旅行" | "爱好" | "情感" | "思考" | "其他"
+            }
             
             规则：
-            1. score是-1.0到1.0的数字：1.0最积极，-1.0最消极，0.0中性
-            2. summary是简短中文，描述心情，引导用户积极思考
-            3. score和summary必须一致：积极心情用正数，消极心情用负数
-            4. tag必须是以下之一：学习、工作、家庭、健康、旅行、爱好、情感、思考、其他
-            5. 根据日记内容选择最合适的标签，如果都不合适则选择"其他"
+            1. score：0.0表示中性/情绪很弱，1.0表示情绪非常强烈
+            2. sentimentType："正面情绪"表示开心/好的感受，"负面情绪"表示难过/不好的感受
+            3. summary：简短中文，描述心情，引导用户积极思考
+            4. score和sentimentType必须一致
+            5. tag：根据日记内容选择最合适的标签，如果都不合适则选择"其他"
             6. 只输出JSON，不要代码块标记、不要解释文字
             
             示例：
             输入："今天发工资了，很开心"
-            输出：{"score": 0.7, "summary": "发工资带来喜悦，继续保持好心情", "tag": "工作"}
+            输出：{"score": 0.7, "sentimentType": "正面情绪", "summary": "发工资带来喜悦，继续保持好心情", "tag": "工作"}
             
             输入："工作压力很大，很累"
-            输出：{"score": -0.5, "summary": "工作压力需要调节，可以尝试放松和休息", "tag": "工作"}
+            输出：{"score": 0.5, "sentimentType": "负面情绪", "summary": "工作压力需要调节，可以尝试放松和休息", "tag": "工作"}
             
             输入："今天和女朋友一起看电影，很幸福"
-            输出：{"score": 0.8, "summary": "与爱人共度美好时光，珍惜当下", "tag": "情感"}
+            输出：{"score": 0.8, "sentimentType": "正面情绪", "summary": "与爱人共度美好时光，珍惜当下", "tag": "情感"}
             
             输入："今天学习了新的编程知识"
-            输出：{"score": 0.6, "summary": "学习带来成长，继续保持", "tag": "学习"}
+            输出：{"score": 0.6, "sentimentType": "正面情绪", "summary": "学习带来成长，继续保持", "tag": "学习"}
+            
+            输入："今天心情一般，没什么特别的"
+            输出：{"score": 0.2, "sentimentType": "正面情绪", "summary": "平静的一天，珍惜这份宁静", "tag": "其他"}
             """
         }
         
+        // 减小 batchSize 和 contextSize 以降低内存使用，避免内存不足导致崩溃
         let config = ModelConfig(
             temperature: 0.2,
             topP: 0.9,
             maxTokens: 256,
-            contextSize: 2048,
-            batchSize: 512,
+            contextSize: 1024,  // 从 2048 减小到 1024，降低内存占用
+            batchSize: 256,      // 从 512 减小到 256，降低内存占用
             systemPrompt: prompt
         )
         model = LlamaModel(config: config)
@@ -112,6 +135,7 @@ actor SentimentAnalyzer {
 
     private struct SentimentPayload: Decodable {
         let score: Double
+        let sentimentType: String
         let summary: String
         let tag: String?
     }
@@ -193,7 +217,32 @@ actor SentimentAnalyzer {
     }
 
     private static func normalize(_ payload: SentimentPayload) -> DiaryEntry.Sentiment {
-        var clampedScore = max(-1.0, min(1.0, payload.score))
+        // 将 0.0-1.0 的 score 和 sentimentType 转换为 -1.0 到 1.0 的 score
+        let rawScore = max(0.0, min(1.0, payload.score))
+        let sentimentTypeLower = payload.sentimentType.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // 判断是正面还是负面情绪（支持中英文）
+        // 默认假设为正面情绪，如果明确是负面则设为负面
+        let isPositive: Bool
+        if sentimentTypeLower.contains("negative") || 
+           sentimentTypeLower.contains("负面") ||
+           sentimentTypeLower == "negative" ||
+           sentimentTypeLower == "负面情绪" {
+            isPositive = false
+        } else {
+            // 默认或明确为 positive/正面情绪
+            isPositive = true
+        }
+        
+        // 转换为 -1.0 到 1.0 的范围：正面情绪为正数，负面情绪为负数
+        let finalScore: Double
+        if isPositive {
+            finalScore = rawScore  // 正面：0.0 -> 0.0, 1.0 -> 1.0
+        } else {
+            finalScore = -rawScore  // 负面：0.0 -> 0.0, 1.0 -> -1.0
+        }
+        
+        let clampedScore = max(-1.0, min(1.0, finalScore))
         let summary = payload.summary.trimmingCharacters(in: .whitespacesAndNewlines)
         let label = labelForScore(clampedScore)
         let emoji = emoji(for: label)

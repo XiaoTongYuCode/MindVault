@@ -28,11 +28,14 @@
 
 // Entries View
 "entries.title" = "Entries";
-"entries.subtitle" = "All entries in reverse chronological order";
 "entries.new.button" = "New Entry";
 "entries.empty.title" = "No entries";
 "entries.empty.message" = "Write your first entry to start recording your mood.";
 "entries.empty.action" = "Write Entry";
+"entries.search.placeholder" = "Search entries...";
+"entries.filter.all" = "All";
+"entries.filter.title" = "Filter by Tag";
+"entries.filter.noResults" = "No entries match your search.";
 
 // Compose View
 "compose.title" = "Compose";
@@ -50,6 +53,7 @@
 "compose.speech.permission.message" = "Please allow microphone and speech recognition access in Settings.";
 "compose.speech.permission.settings" = "Open Settings";
 "compose.speech.error" = "Speech Recognition Error";
+"compose.image.remove" = "Remove Image";
 
 // Entry Detail View
 "entry.detail.title" = "Entry Details";

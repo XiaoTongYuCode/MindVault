@@ -23,14 +23,15 @@ final class PersistenceController {
     private static func makeModel() -> NSManagedObjectModel {
         let model = NSManagedObjectModel()
 
-        let entity = NSEntityDescription()
-        entity.name = "DiaryEntryEntity"
-        entity.managedObjectClassName = NSStringFromClass(DiaryEntryEntity.self)
+        // MARK: - DiaryEntryEntity
+        let entryEntity = NSEntityDescription()
+        entryEntity.name = "DiaryEntryEntity"
+        entryEntity.managedObjectClassName = NSStringFromClass(DiaryEntryEntity.self)
 
-        let id = NSAttributeDescription()
-        id.name = "id"
-        id.attributeType = .UUIDAttributeType
-        id.isOptional = false
+        let entryId = NSAttributeDescription()
+        entryId.name = "id"
+        entryId.attributeType = .UUIDAttributeType
+        entryId.isOptional = false
 
         let title = NSAttributeDescription()
         title.name = "title"
@@ -83,8 +84,50 @@ final class PersistenceController {
         tag.attributeType = .stringAttributeType
         tag.isOptional = true
 
-        entity.properties = [
-            id,
+        // MARK: - DiaryImageEntity
+        let imageEntity = NSEntityDescription()
+        imageEntity.name = "DiaryImageEntity"
+        imageEntity.managedObjectClassName = NSStringFromClass(DiaryImageEntity.self)
+
+        let imageId = NSAttributeDescription()
+        imageId.name = "id"
+        imageId.attributeType = .UUIDAttributeType
+        imageId.isOptional = false
+
+        let imageData = NSAttributeDescription()
+        imageData.name = "imageData"
+        imageData.attributeType = .binaryDataAttributeType
+        imageData.isOptional = false
+        imageData.allowsExternalBinaryDataStorage = true
+
+        let orderIndex = NSAttributeDescription()
+        orderIndex.name = "orderIndex"
+        orderIndex.attributeType = .integer16AttributeType
+        orderIndex.isOptional = false
+        orderIndex.defaultValue = 0
+
+        // MARK: - Relationships
+        let imagesRelationship = NSRelationshipDescription()
+        imagesRelationship.name = "images"
+        imagesRelationship.destinationEntity = imageEntity
+        imagesRelationship.minCount = 0
+        imagesRelationship.maxCount = 0 // 0 means no upper bound
+        imagesRelationship.deleteRule = .cascadeDeleteRule
+        imagesRelationship.isOptional = true
+
+        let entryRelationship = NSRelationshipDescription()
+        entryRelationship.name = "entry"
+        entryRelationship.destinationEntity = entryEntity
+        entryRelationship.minCount = 1
+        entryRelationship.maxCount = 1
+        entryRelationship.deleteRule = .nullifyDeleteRule
+        entryRelationship.isOptional = false
+
+        imagesRelationship.inverseRelationship = entryRelationship
+        entryRelationship.inverseRelationship = imagesRelationship
+
+        entryEntity.properties = [
+            entryId,
             title,
             content,
             createdAt,
@@ -94,10 +137,18 @@ final class PersistenceController {
             sentimentEmoji,
             sentimentSummary,
             isAnalyzing,
-            tag
+            tag,
+            imagesRelationship
         ]
 
-        model.entities = [entity]
+        imageEntity.properties = [
+            imageId,
+            imageData,
+            orderIndex,
+            entryRelationship
+        ]
+
+        model.entities = [entryEntity, imageEntity]
         return model
     }
 }
@@ -115,12 +166,21 @@ final class DiaryEntryEntity: NSManagedObject {
     @NSManaged var sentimentSummary: String?
     @NSManaged var isAnalyzing: Bool
     @NSManaged var tag: String?
+    @NSManaged var images: NSSet?
 
     @nonobjc class func fetchRequestAll() -> NSFetchRequest<DiaryEntryEntity> {
         let request = NSFetchRequest<DiaryEntryEntity>(entityName: "DiaryEntryEntity")
         request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
         return request
     }
+}
+
+@objc(DiaryImageEntity)
+final class DiaryImageEntity: NSManagedObject {
+    @NSManaged var id: UUID
+    @NSManaged var imageData: Data
+    @NSManaged var orderIndex: Int16
+    @NSManaged var entry: DiaryEntryEntity
 }
 
 extension DiaryEntryEntity {
@@ -142,6 +202,11 @@ extension DiaryEntryEntity {
 
         let tag: DiaryTag? = self.tag.flatMap { DiaryTag(rawValue: $0) }
 
+        let imageEntities = (images as? Set<DiaryImageEntity>) ?? []
+        let imageModels: [DiaryImage] = imageEntities
+            .sorted { $0.orderIndex < $1.orderIndex }
+            .map { DiaryImage(id: $0.id, data: $0.imageData) }
+
         return DiaryEntry(
             id: id,
             title: title,
@@ -150,7 +215,8 @@ extension DiaryEntryEntity {
             updatedAt: updatedAt,
             sentiment: sentiment,
             tag: tag,
-            isAnalyzing: isAnalyzing
+            isAnalyzing: isAnalyzing,
+            images: imageModels
         )
     }
 }

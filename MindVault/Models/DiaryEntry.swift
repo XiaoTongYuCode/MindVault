@@ -70,6 +70,11 @@ enum DiaryTag: String, CaseIterable, Hashable, Codable {
     }
 }
 
+struct DiaryImage: Identifiable, Hashable {
+    let id: UUID
+    let data: Data
+}
+
 struct DiaryEntry: Identifiable, Hashable {
     let id: UUID
     var title: String
@@ -79,6 +84,7 @@ struct DiaryEntry: Identifiable, Hashable {
     var sentiment: Sentiment?
     var tag: DiaryTag?
     var isAnalyzing: Bool
+    var images: [DiaryImage]
 
     struct Sentiment: Hashable {
         let score: Double      // [-1, 1]
