@@ -152,7 +152,7 @@ struct HomeView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                     .frame(height: geometry.size.height)
                 }
-                .frame(minHeight: 400)
+                .frame(minHeight: 250)
             } else {
                 ForEach(Array(store.entries.prefix(5).enumerated()), id: \.element.id) { index, entry in
                     NavigationLink(value: entry) {

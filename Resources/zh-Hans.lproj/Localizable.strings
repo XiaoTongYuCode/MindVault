@@ -126,5 +126,17 @@
 "tag.reflection" = "思考";
 "tag.other" = "其他";
 
+// Onboarding View
+"onboarding.skip" = "跳过";
+"onboarding.back" = "返回";
+"onboarding.continue" = "继续";
+"onboarding.start" = "开始使用";
+"onboarding.page1.title" = "心匣·你的私密倾诉空间";
+"onboarding.page1.description" = "在这里，你可以毫无保留。原始日记永不离开你的设备。";
+"onboarding.page2.title" = "分析 只有你自己知道";
+"onboarding.page2.description" = "所有情绪分析均在 iPhone 本地完成，无需联网，秒级出洞察";
+"onboarding.page3.title" = "现在，写下第一句心事吧。";
+"onboarding.page3.description" = "它会被好好珍藏，无人知晓，除了你。";
+
 // Common
 "common.cancel" = "取消";
