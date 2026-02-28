@@ -55,7 +55,7 @@ struct EntryDetailView: View {
                     .lineSpacing(8)
                     .fadeIn()
 
-                if !entry.isAnalyzing {
+                if !entry.isAnalyzing && !isAnalysisFailed {
                     sentimentCard
                         .fadeIn()
                 }
@@ -112,6 +112,10 @@ struct EntryDetailView: View {
             Capsule()
                 .fill(MVTheme.primary.opacity(0.12))
         )
+    }
+
+    private var isAnalysisFailed: Bool {
+        entry.sentiment?.summary == "entry.analysis.failed"
     }
 
     private var sentimentCard: some View {

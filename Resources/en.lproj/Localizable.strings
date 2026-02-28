@@ -1,6 +1,6 @@
 /* 
   Localizable.strings (English)
-  MindVault
+  Myrisle
   
   Created by XTY on 2026/2/12.
 */
@@ -131,7 +131,7 @@
 "onboarding.back" = "Back";
 "onboarding.continue" = "Continue";
 "onboarding.start" = "Get Started";
-"onboarding.page1.title" = "MindVault · Your Private Confession Space";
+"onboarding.page1.title" = "Myrisle · Your Private Confession Space";
 "onboarding.page1.description" = "Here, you can be completely open. Your original diary never leaves your device.";
 "onboarding.page2.title" = "Analysis Only You Know";
 "onboarding.page2.description" = "All sentiment analysis runs locally on your iPhone, no internet required, instant insights";

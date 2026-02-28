@@ -96,8 +96,11 @@ struct HomeView: View {
                             .lineLimit(3)
                             .lineSpacing(6)
                             .fixedSize(horizontal: false, vertical: true)
+                        
+                        Spacer()
                     }
                 }
+                .frame(maxWidth: .infinity)
             }
         }
     }

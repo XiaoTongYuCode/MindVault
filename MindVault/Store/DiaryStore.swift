@@ -226,7 +226,7 @@ final class DiaryStore: ObservableObject {
             let savedLanguage = UserDefaults.standard.string(forKey: "app_language") ?? "zh-Hans"
             aiGreeting = savedLanguage == "en" 
                 ? "Welcome! Start your first diary entry to begin your journey."
-                : "很高兴认识你！写下一篇日记，开始你的点滴记录叭～"
+                : "Hi！空空的岛上还只有我一个，等你来留下第一行足迹。"
         }
     }
     
@@ -247,7 +247,7 @@ final class DiaryStore: ObservableObject {
             let savedLanguage = UserDefaults.standard.string(forKey: "app_language") ?? "zh-Hans"
             aiGreeting = savedLanguage == "en" 
                 ? "Welcome! Start your first diary entry to begin your journey."
-                : "很高兴认识你！写下第一篇日记，开始你的记录之旅～"
+                : "Hi！空空的岛上还只有我一个，等你来留下第一行足迹。"
             return
         }
         
@@ -279,6 +279,15 @@ final class DiaryStore: ObservableObject {
             
             do {
                 let greeting = try await self.analyzer.generateGreeting(from: recentEntries)
+                
+                // 检查问候语是否包含"[暂停啦]"，如果包含则视为分析失败
+                if greeting.contains("[暂停啦]") {
+                    print("⚠️ 生成的问候语包含[暂停啦]，视为分析失败，保持原有问候语")
+                    await MainActor.run {
+                        self.isGeneratingGreeting = false
+                    }
+                    return
+                }
                 
                 // 在主线程更新UI和缓存
                 await MainActor.run {

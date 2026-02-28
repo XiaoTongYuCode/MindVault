@@ -1,6 +1,6 @@
 //
 //  LlamaModel.swift
-//  MindVault
+//  Myrisle
 //
 //  Created by XTY on 2026/2/12.
 //
@@ -361,9 +361,12 @@ class LlamaModel {
             // 分批处理：先处理前面的完整批次（不需要 logits）
             var processedCount = 0
             let fullBatches = tokens.count / batchSize
+            let remainingCount = tokens.count % batchSize
+            let isLastBatchFull = (remainingCount == 0)
             
-            // 处理完整的批次
-            for _ in 0..<fullBatches {
+            // 处理完整的批次（不包括最后一批，如果最后一批是完整的话）
+            let batchesToProcess = isLastBatchFull ? (fullBatches - 1) : fullBatches
+            for _ in 0..<batchesToProcess {
                 var batch = llama_batch_init(Int32(batchSize), 0, 1)
                 defer { llama_batch_free(batch) }
                 
@@ -397,9 +400,39 @@ class LlamaModel {
                 processedCount += batchSize
             }
             
-            // 处理最后一批剩余的 tokens（最后一个 token 需要 logits）
-            let remainingCount = tokens.count - processedCount
-            if remainingCount > 0 {
+            // 处理最后一批（最后一个 token 需要 logits）
+            if isLastBatchFull {
+                // 最后一批是完整的 batch，最后一个 token 需要 logits
+                var finalBatch = llama_batch_init(Int32(batchSize), 0, 1)
+                defer { llama_batch_free(finalBatch) }
+                
+                finalBatch.n_tokens = Int32(batchSize)
+                for i in 0..<batchSize {
+                    let idx = Int(i)
+                    let tokenIdx = processedCount + idx
+                    finalBatch.token[idx] = tokens[tokenIdx]
+                    finalBatch.pos[idx] = Int32(tokenIdx)
+                    finalBatch.n_seq_id[idx] = 1
+                    
+                    // 安全地设置 seq_id
+                    if let seq_ids = finalBatch.seq_id {
+                        let seq_id_ptr = seq_ids.advanced(by: idx)
+                        if let seq_id = seq_id_ptr.pointee {
+                            seq_id.withMemoryRebound(to: Int32.self, capacity: 1) { seqIdArray in
+                                seqIdArray[0] = 0
+                            }
+                        }
+                    }
+                    
+                    // 只有最后一个 token 需要 logits
+                    finalBatch.logits[idx] = (idx == batchSize - 1) ? 1 : 0
+                }
+                
+                guard llama_decode(context, finalBatch) == 0 else {
+                    throw ModelError.decodeFailed
+                }
+            } else if remainingCount > 0 {
+                // 最后一批不是完整的 batch
                 var finalBatch = llama_batch_init(Int32(remainingCount), 0, 1)
                 defer { llama_batch_free(finalBatch) }
                 
@@ -543,25 +576,37 @@ class LlamaModel {
                     let logitsIndex: Int32
                     if currentBatch.n_tokens == 0 {
                         // 第一次循环，从 prompt 的最后一个 token 获取
-                        // 注意：llama_get_logits_ith 返回的是最后一批 batch 中的 logits
-                        // 如果 prompt 的 token 数量超过 batch 大小，需要计算最后一批的最后一个 token 在 batch 中的索引
-                        let batchSize = Int32(self.config.batchSize)
-                        if promptTokenCount > Int(batchSize) {
+                        // 注意：llama_get_logits_ith 需要传入的是最后一批 batch 中最后一个设置了 logits=1 的 token 在 batch 中的索引（0-based）
+                        let batchSize = Int(self.config.batchSize)
+                        if promptTokenCount > batchSize {
                             // prompt 被分批处理，计算最后一批的最后一个 token 在 batch 中的索引
-                            let remainingCount = promptTokenCount % Int(batchSize)
-                            // 如果余数为 0，说明最后一批正好是完整的 batch，最后一个 token 的索引是 batchSize - 1
-                            // 否则，最后一个 token 的索引是 remainingCount - 1
-                            logitsIndex = remainingCount == 0 ? (batchSize - 1) : Int32(remainingCount - 1)
+                            let remainingCount = promptTokenCount % batchSize
+                            if remainingCount == 0 {
+                                // 如果余数为 0，说明最后一批正好是完整的 batch，最后一个 token 的索引是 batchSize - 1
+                                logitsIndex = Int32(batchSize - 1)
+                            } else {
+                                // 否则，最后一个 token 的索引是 remainingCount - 1
+                                logitsIndex = Int32(remainingCount - 1)
+                            }
                         } else {
-                            // prompt 在一个 batch 内，直接使用 promptTokenCount - 1
+                            // prompt 在一个 batch 内，最后一个 token 的索引是 promptTokenCount - 1
                             logitsIndex = Int32(promptTokenCount - 1)
                         }
                     } else {
-                        // 后续循环，从 batch 的最后一个 token 获取
+                        // 后续循环，从 batch 的最后一个 token 获取（batch 中只有一个 token，索引为 0）
                         logitsIndex = currentBatch.n_tokens - 1
                     }
                     
+                    // 验证 logitsIndex 是否有效（应该 >= 0 且 < batchSize）
+                    let batchSize = Int(self.config.batchSize)
+                    guard logitsIndex >= 0 && logitsIndex < Int32(batchSize) else {
+                        print("❌ [LlamaModel] 无效的 logitsIndex: \(logitsIndex), batchSize: \(batchSize), promptTokenCount: \(promptTokenCount)")
+                        continuation.resume(returning: (nil, nil, currentNCur, currentPenaltyTokens))
+                        return
+                    }
+                    
                     guard let logits = llama_get_logits_ith(context, logitsIndex) else {
+                        print("❌ [LlamaModel] 无法获取 logits，logitsIndex: \(logitsIndex)")
                         continuation.resume(returning: (nil, nil, currentNCur, currentPenaltyTokens))
                         return
                     }

@@ -1,0 +1,9 @@
+/* 
+  InfoPlist.strings (English)
+  Myrisle
+  
+  Created on 2026/2/12.
+*/
+
+CFBundleDisplayName = "Myrisle";
+CFBundleName = "Myrisle";

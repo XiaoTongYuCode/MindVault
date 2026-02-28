@@ -1,6 +1,6 @@
 //
 //  OnboardingView.swift
-//  MindVault
+//  Myrisle
 //
 //  Created on 2026/2/12.
 //
@@ -12,6 +12,7 @@ struct OnboardingView: View {
     @EnvironmentObject var themeManager: ThemeManager
     @EnvironmentObject var languageManager: LanguageManager
     @State private var currentPage = 0
+    @State private var isLoading = false
     @Binding var isComplete: Bool
     
     private let totalPages = 3
@@ -27,7 +28,10 @@ struct OnboardingView: View {
                 HStack {
                     Spacer()
                     Button {
-                        completeOnboarding()
+                        isLoading = true
+                        Task {
+                            await completeOnboarding()
+                        }
                     } label: {
                         Text("onboarding.skip".localized(using: languageManager))
                             .font(.system(size: 16, weight: .medium))
@@ -35,6 +39,7 @@ struct OnboardingView: View {
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
                     }
+                    .disabled(isLoading)
                 }
                 .padding(.top, 20)
                 .padding(.horizontal, 20)
@@ -110,19 +115,31 @@ struct OnboardingView: View {
                                 currentPage += 1
                             }
                         } else {
-                            completeOnboarding()
+                            isLoading = true
+                            Task {
+                                await completeOnboarding()
+                            }
                         }
                     } label: {
-                        Text(currentPage < totalPages - 1 ? "onboarding.continue".localized(using: languageManager) : "onboarding.start".localized(using: languageManager))
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(MVTheme.primary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color.white)
-                            )
+                        HStack {
+                            if isLoading && currentPage >= totalPages - 1 {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: MVTheme.primary))
+                                    .scaleEffect(0.8)
+                            } else {
+                                Text(currentPage < totalPages - 1 ? "onboarding.continue".localized(using: languageManager) : "onboarding.start".localized(using: languageManager))
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
+                        }
+                        .foregroundColor(MVTheme.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.white)
+                        )
                     }
+                    .disabled(isLoading && currentPage >= totalPages - 1)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 40)
@@ -130,10 +147,16 @@ struct OnboardingView: View {
         }
     }
     
-    private func completeOnboarding() {
+    private func completeOnboarding() async {
+        // 给一点时间显示加载状态，避免闪烁
+        try? await Task.sleep(nanoseconds: 300_000_000) // 0.3秒
+        
         UserDefaults.standard.set(true, forKey: "has_completed_onboarding")
-        withAnimation(.easeInOut(duration: 0.5)) {
-            isComplete = false  // false 表示引导已完成，不再显示
+        
+        await MainActor.run {
+            withAnimation(.easeInOut(duration: 0.5)) {
+                isComplete = false  // false 表示引导已完成，不再显示
+            }
         }
     }
 }

@@ -7,7 +7,7 @@ final class PersistenceController {
 
     init(inMemory: Bool = false) {
         let model = Self.makeModel()
-        container = NSPersistentContainer(name: "MindVaultModel", managedObjectModel: model)
+        container = NSPersistentContainer(name: "MyrisleModel", managedObjectModel: model)
         if inMemory {
             container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
         }

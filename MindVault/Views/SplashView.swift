@@ -1,6 +1,6 @@
 //
 //  SplashView.swift
-//  MindVault
+//  Myrisle
 //
 //  Created on 2026/2/12.
 //
@@ -30,7 +30,7 @@ struct SplashView: View {
                     .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
                 
                 // 应用名称（可选）
-                Text("MindVault")
+                Text("Myrisle")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
                     .opacity(opacity)

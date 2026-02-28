@@ -1,6 +1,6 @@
 //
-//  MindVaultApp.swift
-//  MindVault
+//  MyrisleApp.swift
+//  Myrisle
 //
 //  Created by XTY on 2026/2/12.
 //
@@ -9,7 +9,7 @@ import SwiftUI
 import CoreData
 
 @main
-struct MindVaultApp: App {
+struct MyrisleApp: App {
     private let persistence = PersistenceController.shared
     @StateObject private var languageManager = LanguageManager.shared
     @StateObject private var themeManager = ThemeManager.shared

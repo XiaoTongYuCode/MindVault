@@ -9,12 +9,15 @@
 /* Begin PBXBuildFile section */
 		18AE588B2F3D686A00DDAF5A /* LlamaSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 18AE588A2F3D686A00DDAF5A /* LlamaSwift */; };
 		18AE59522F40A13B00DDAF5A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 18AE59502F40A13B00DDAF5A /* Localizable.strings */; };
+		18AE59562F40A13B00DDAF5A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 18AE59552F40A13B00DDAF5A /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		18AE58772F3D64C000DDAF5A /* MindVault.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MindVault.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		18AE58772F3D64C000DDAF5A /* Myrisle.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Myrisle.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		18AE594E2F40A13B00DDAF5A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		18AE594F2F40A13B00DDAF5A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		18AE59532F40A13B00DDAF5A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		18AE59542F40A13B00DDAF5A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -23,7 +26,7 @@
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 18AE58762F3D64C000DDAF5A /* MindVault */;
+			target = 18AE58762F3D64C000DDAF5A /* Myrisle */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -67,7 +70,7 @@
 		18AE58782F3D64C000DDAF5A /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				18AE58772F3D64C000DDAF5A /* MindVault.app */,
+				18AE58772F3D64C000DDAF5A /* Myrisle.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -77,6 +80,7 @@
 			children = (
 				18AE59662F415F9C00DDAF5A /* img */,
 				18AE59502F40A13B00DDAF5A /* Localizable.strings */,
+				18AE59552F40A13B00DDAF5A /* InfoPlist.strings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -84,9 +88,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		18AE58762F3D64C000DDAF5A /* MindVault */ = {
+		18AE58762F3D64C000DDAF5A /* Myrisle */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 18AE58822F3D64C100DDAF5A /* Build configuration list for PBXNativeTarget "MindVault" */;
+			buildConfigurationList = 18AE58822F3D64C100DDAF5A /* Build configuration list for PBXNativeTarget "Myrisle" */;
 			buildPhases = (
 				18AE58732F3D64C000DDAF5A /* Sources */,
 				18AE58742F3D64C000DDAF5A /* Frameworks */,
@@ -100,12 +104,12 @@
 				18AE58792F3D64C000DDAF5A /* MindVault */,
 				18AE59662F415F9C00DDAF5A /* img */,
 			);
-			name = MindVault;
+			name = Myrisle;
 			packageProductDependencies = (
 				18AE588A2F3D686A00DDAF5A /* LlamaSwift */,
 			);
-			productName = MindVault;
-			productReference = 18AE58772F3D64C000DDAF5A /* MindVault.app */;
+			productName = Myrisle;
+			productReference = 18AE58772F3D64C000DDAF5A /* Myrisle.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -141,7 +145,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				18AE58762F3D64C000DDAF5A /* MindVault */,
+				18AE58762F3D64C000DDAF5A /* Myrisle */,
 			);
 		};
 /* End PBXProject section */
@@ -152,6 +156,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				18AE59522F40A13B00DDAF5A /* Localizable.strings in Resources */,
+				18AE59562F40A13B00DDAF5A /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -175,6 +180,15 @@
 				18AE594F2F40A13B00DDAF5A /* zh-Hans */,
 			);
 			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+		18AE59552F40A13B00DDAF5A /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				18AE59532F40A13B00DDAF5A /* en */,
+				18AE59542F40A13B00DDAF5A /* zh-Hans */,
+			);
+			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -303,7 +317,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MindVault/MindVault.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.1;
+				CURRENT_PROJECT_VERSION = 1.2;
 				DEVELOPMENT_TEAM = 2HLNAHGU24;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -311,6 +325,8 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MindVault/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Myrisle;
+				INFOPLIST_KEY_CFBundleName = Myrisle;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -325,7 +341,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				OPENROUTER_API_KEY = "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";
 				PRODUCT_BUNDLE_IDENTIFIER = com.xiaotongyu.MindVault;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -350,7 +366,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MindVault/MindVault.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.1;
+				CURRENT_PROJECT_VERSION = 1.2;
 				DEVELOPMENT_TEAM = 2HLNAHGU24;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -358,6 +374,8 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MindVault/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Myrisle;
+				INFOPLIST_KEY_CFBundleName = Myrisle;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -372,7 +390,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				OPENROUTER_API_KEY = "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";
 				PRODUCT_BUNDLE_IDENTIFIER = com.xiaotongyu.MindVault;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -402,7 +420,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		18AE58822F3D64C100DDAF5A /* Build configuration list for PBXNativeTarget "MindVault" */ = {
+		18AE58822F3D64C100DDAF5A /* Build configuration list for PBXNativeTarget "Myrisle" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				18AE58832F3D64C100DDAF5A /* Debug */,

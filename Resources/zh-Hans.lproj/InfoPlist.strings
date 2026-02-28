@@ -1,0 +1,9 @@
+/* 
+  InfoPlist.strings (Chinese Simplified)
+  Myrisle
+  
+  Created on 2026/2/12.
+*/
+
+CFBundleDisplayName = "私屿";
+CFBundleName = "私屿";
