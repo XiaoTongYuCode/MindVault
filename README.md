@@ -49,7 +49,11 @@ Myrisle（中文名「私屿」）是一款专注于**本地私密情绪日记**
    ```
 1. 下载并安置模型文件 (**重要**)
 
-   模型链接：https://pan.quark.cn/s/83f57790b109
+   方式 1. 夸克网盘链接：https://pan.quark.cn/s/83f57790b109
+
+   方式 2. 前往 https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/tree/main
+
+   下载 qwen2.5-1.5b-instruct-q4_k_m.gguf 文件
 
    下载后放置在 SelfAi 文件夹下，即如下路径：
    ```
@@ -124,5 +128,5 @@ MindVault/
 ### 版权与协议
 
 本项目目前为个人 / 内部项目（未明确开源协议）。  
-如需二次开发、商用或发布，请与作者沟通或自行补充 LICENSE 文件。
+如需二次开发、商用或发布，请与作者沟通。
 
