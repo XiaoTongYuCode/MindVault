@@ -5,6 +5,8 @@ Myrisle（中文名「私屿」）是一款专注于**本地私密情绪日记**
 
 > 记录即疗愈，用 AI 读懂你的情绪，让每一篇日记都有温度。
 
+![预览](https://cdn.nlark.com/yuque/0/2026/png/60655560/1772437838362-0dd0d0aa-086f-4f18-a29f-0f044a9affda.png?x-oss-process=image%2Fformat%2Cwebp)
+
 ---
 
 ### 特性一览
