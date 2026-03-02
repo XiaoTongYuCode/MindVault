@@ -12,6 +12,7 @@ struct SplashView: View {
     @State private var scale: CGFloat = 0.8
     @State private var opacity: Double = 0.0
     @State private var rotation: Double = 0
+    @State private var logoImage: UIImage?
     
     var body: some View {
         ZStack {
@@ -20,14 +21,24 @@ struct SplashView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 24) {
-                // 应用图标
-                Image(systemName: "heart.text.square.fill")
-                    .font(.system(size: 80))
-                    .foregroundStyle(.white)
-                    .scaleEffect(scale)
-                    .opacity(opacity)
-                    .rotationEffect(.degrees(rotation))
-                    .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
+                // 应用图标（优先使用自定义 Logo 图片）
+                Group {
+                    if let logoImage = logoImage {
+                        Image(uiImage: logoImage)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 120, height: 120)
+                    } else {
+                        // 回退到 SF Symbol（如果图片加载失败）
+                        Image(systemName: "heart.text.square.fill")
+                            .font(.system(size: 80))
+                            .foregroundStyle(.white)
+                    }
+                }
+                .scaleEffect(scale)
+                .opacity(opacity)
+                .rotationEffect(.degrees(rotation))
+                .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
                 
                 // 应用名称（可选）
                 Text("Myrisle")
@@ -38,6 +49,9 @@ struct SplashView: View {
             }
         }
         .onAppear {
+            // 加载 Logo 图片
+            logoImage = loadAppLogo()
+            
             // 启动动画序列
             withAnimation(.easeOut(duration: 0.6)) {
                 scale = 1.0

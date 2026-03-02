@@ -21,7 +21,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		18AE59192F401E4600DDAF5A /* Exceptions for "MindVault" folder in "MindVault" target */ = {
+		18AE59192F401E4600DDAF5A /* Exceptions for "MindVault" folder in "Myrisle" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -34,7 +34,7 @@
 		18AE58792F3D64C000DDAF5A /* MindVault */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				18AE59192F401E4600DDAF5A /* Exceptions for "MindVault" folder in "MindVault" target */,
+				18AE59192F401E4600DDAF5A /* Exceptions for "MindVault" folder in "Myrisle" target */,
 			);
 			path = MindVault;
 			sourceTree = "<group>";
@@ -317,7 +317,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MindVault/MindVault.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.2;
+				CURRENT_PROJECT_VERSION = 1.2.1;
 				DEVELOPMENT_TEAM = 2HLNAHGU24;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -341,7 +341,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.2.1;
 				OPENROUTER_API_KEY = "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";
 				PRODUCT_BUNDLE_IDENTIFIER = com.xiaotongyu.MindVault;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -366,7 +366,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MindVault/MindVault.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.2;
+				CURRENT_PROJECT_VERSION = 1.2.1;
 				DEVELOPMENT_TEAM = 2HLNAHGU24;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -390,7 +390,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.2.1;
 				OPENROUTER_API_KEY = "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";
 				PRODUCT_BUNDLE_IDENTIFIER = com.xiaotongyu.MindVault;
 				PRODUCT_NAME = "$(TARGET_NAME)";

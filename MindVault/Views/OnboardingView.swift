@@ -50,7 +50,8 @@ struct OnboardingView: View {
                     OnboardingPage(
                         title: "onboarding.page1.title".localized(using: languageManager),
                         description: "onboarding.page1.description".localized(using: languageManager),
-                        icon: "lock.shield.fill"
+                        icon: "lock.shield.fill",
+                        useLogo: true
                     )
                     .tag(0)
                     
@@ -161,26 +162,63 @@ struct OnboardingView: View {
     }
 }
 
+/// 应用 Logo 加载辅助方法，供多个视图复用
+func loadAppLogo() -> UIImage? {
+    // 尝试多种路径和扩展名组合来加载 logo 图片
+    var logoURL: URL?
+
+    // 方式: 直接查找（不带子目录）
+    if let url = Bundle.main.url(forResource: "logo", withExtension: "PNG") {
+        logoURL = url
+    } else if let url = Bundle.main.url(forResource: "logo", withExtension: "png") {
+        logoURL = url
+    }
+    
+    if let logoURL = logoURL {
+        return UIImage(contentsOfFile: logoURL.path)
+    }
+    return nil
+}
+
 /// 单个引导页面
 struct OnboardingPage: View {
     let title: String
     let description: String
     let icon: String
+    let useLogo: Bool
+
+    init(title: String, description: String, icon: String, useLogo: Bool = false) {
+        self.title = title
+        self.description = description
+        self.icon = icon
+        self.useLogo = useLogo
+    }
     
     @State private var scale: CGFloat = 0.8
     @State private var opacity: Double = 0.0
+    @State private var logoImage: UIImage?
     
     var body: some View {
         VStack(spacing: 40) {
             Spacer()
             
-            // 图标
-            Image(systemName: icon)
-                .font(.system(size: 100))
-                .foregroundStyle(.white)
-                .scaleEffect(scale)
-                .opacity(opacity)
-                .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
+            // 图标（仅在需要时使用应用 Logo 图片）
+            Group {
+                if useLogo, let logoImage = logoImage {
+                    Image(uiImage: logoImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 180, height: 180)
+                } else {
+                    // 回退到 SF Symbol（如果图片加载失败）
+                    Image(systemName: icon)
+                        .font(.system(size: 100))
+                        .foregroundStyle(.white)
+                }
+            }
+            .scaleEffect(scale)
+            .opacity(opacity)
+            .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
             
             // 标题和描述
             VStack(spacing: 20) {
@@ -204,6 +242,11 @@ struct OnboardingPage: View {
             Spacer()
         }
         .onAppear {
+            if useLogo {
+                logoImage = loadAppLogo()
+            } else {
+                logoImage = nil
+            }
             withAnimation(.easeOut(duration: 0.6)) {
                 scale = 1.0
                 opacity = 1.0
