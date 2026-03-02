@@ -23,3 +23,10 @@ Pods/
 *.xcconfig
 
 MindVault/SelfAi/*.gguf
+
+.home/
+.idea/
+.vscode/
+.tmp/
+.derivedData/
+.DS_Store
